@@ -1,0 +1,35 @@
+server:
+  port: 8081 # Usando porta 8081 para evitar conflito com outros serviços
+
+spring:
+  # Configuração do PostgreSQL
+  datasource:
+    url: jdbc:postgresql://localhost:5432/cearabank_security_db
+    username: postgres 
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+  
+  # Configuração JPA/Hibernate
+  jpa:
+    hibernate:
+      ddl-auto: update 
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+# Configuração do Swagger/OpenAPI
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html 
+  api-docs:
+    path: /v3/api-docs 
+
+# Configuração do JWT
+application:
+  security:
+    jwt:
+      # CHAVE SECRETA: Deve ser uma string BASE64 de 32 bytes (256 bits) ou mais.
+      # Exemplo de chave real (pode gerar uma nova): 
+      secret-key: NTk1MzkwNGE2ZDc2Mzc2NDdhZWM2MjNiNmY1MzY4Mzc1OTZjNjMzNjU0NjI2MzYzNjE2NDY1Njk3NDcwNzc=
+      expiration: 3600000 # 1 hora em milissegundos (60 * 60 * 1000)

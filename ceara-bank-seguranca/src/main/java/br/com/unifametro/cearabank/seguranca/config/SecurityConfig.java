@@ -1,6 +1,6 @@
 package br.com.unifametro.cearabank.seguranca.config;
 
-import com.cearabank.security.service.UserDetailsServiceImpl;
+import br.com.unifametro.cearabank.seguranca.service.UserDetailsServiceImpl;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;

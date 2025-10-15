@@ -1,10 +1,11 @@
 package br.com.unifametro.cearabank.seguranca.model;
 
 import jakarta.persistence.*;
-import lombok.Getter; // Adicionando Getter e Setter para controle
-import lombok.Setter; // Adicionando Getter e Setter para controle
+import lombok.Getter;
+import lombok.Setter;
 import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
@@ -22,51 +23,36 @@ public class User implements UserDetails {
     private Long id;
 
     @Column(unique = true, nullable = false)
-    private String username; // Este campo
+    private String username;
     
     @Column(nullable = false)
-    private String password; // E este campo
+    private String password;
 
-    // Construtor para registro
     public User(String username, String password) {
         this.username = username;
         this.password = password;
     }
 
-    // --- Implementação UserDetails (Sobrescrita explícita dos métodos) ---
+    // --- Implementação UserDetails ---
     
     @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"));
+    }
+
+    @Override
     public String getPassword() {
-        return password; // Implementação Manual
+        return password;
     }
 
     @Override
     public String getUsername() {
-        return username; // Implementação Manual
+        return username;
     }
     
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.singletonList((GrantedAuthority) () -> "ROLE_USER");
-    }
-
-    @Override
-    public boolean isAccountNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isAccountNonLocked() {
-        return true;
-    }
-
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return true;
-    }
+    // Métodos simples, sempre retornando true para a aula
+    @Override public boolean isAccountNonExpired() { return true; }
+    @Override public boolean isAccountNonLocked() { return true; }
+    @Override public boolean isCredentialsNonExpired() { return true; }
+    @Override public boolean isEnabled() { return true; }
 }

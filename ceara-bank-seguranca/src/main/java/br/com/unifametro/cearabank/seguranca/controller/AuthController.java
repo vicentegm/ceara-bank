@@ -13,7 +13,10 @@ import org.springframework.web.bind.annotation.RestController;
 import br.com.unifametro.cearabank.seguranca.model.User;
 import br.com.unifametro.cearabank.seguranca.model.RegistrationRequest;
 import br.com.unifametro.cearabank.seguranca.model.LoginRequest;
-
+import br.com.unifametro.cearabank.seguranca.repository.UserRepository;
+import br.com.unifametro.cearabank.seguranca.service.JwtService;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 
 
 @RestController
@@ -64,4 +67,15 @@ public class AuthController {
 
         return ResponseEntity.ok(jwt);
     }
+
+    // --- ENDPOINT 3/12: VALIDAÇÃO DO TOKEN (GET /auth/validate) ---
+    // Este endpoint será usado pelos outros microsserviços para validar tokens
+    @GetMapping("/validate")
+    public ResponseEntity<String> validateToken(Authentication authentication) {
+        if (authentication != null && authentication.isAuthenticated()) {
+            return ResponseEntity.ok("Token Válido para o usuário: " + authentication.getName());
+        }
+        return new ResponseEntity<>("Token Inválido ou Ausente.", HttpStatus.UNAUTHORIZED);
+    }
+
 }
