@@ -1,4 +1,4 @@
-package br.com.unifametro.ceara_bank_seguranca;
+package br.com.unifametro.cearabank;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
