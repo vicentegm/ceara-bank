@@ -17,10 +17,27 @@ import br.com.unifametro.cearabank.seguranca.repository.UserRepository;
 import br.com.unifametro.cearabank.seguranca.service.JwtService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema; 
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+import br.com.unifametro.cearabank.seguranca.dto.UserResponse;
+import br.com.unifametro.cearabank.seguranca.dto.TokenResponse; 
 
 
 @RestController
 @RequestMapping("/auth")
+@Tag(name = "Autenticação e Usuários", description = "Endpoints para registro de usuário e login (JWT)") // Adicione esta linha
 public class AuthController {
 
     private final UserRepository userRepository;
@@ -39,7 +56,26 @@ public class AuthController {
 
     // --- ENDPOINT 1/12: REGISTRO DE USUÁRIO (POST /auth/users) ---
     @PostMapping("/users")
-    public ResponseEntity<String> registrarUsuario(@RequestBody RegistrationRequest request) {
+    @Operation(summary = "Registrar um novo usuário no sistema")
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "201", 
+            description = "Usuário registrado com sucesso. Retorna o usuário criado.",
+            content = @Content(mediaType = "application/json", 
+                               schema = @Schema(implementation = UserResponse.class)) // Exemplo de sucesso
+        ),
+        @ApiResponse(
+            responseCode = "400", 
+            description = "Dados inválidos (ex: username/password vazios).",
+            content = @Content(mediaType = "application/json") // Sem Schema específico para 400
+        ),
+        @ApiResponse(
+            responseCode = "409", 
+            description = "Conflito: Usuário já existe no banco de dados.",
+            content = @Content(mediaType = "application/json") 
+        )
+    })
+       public ResponseEntity<String> registrarUsuario(@RequestBody RegistrationRequest request) {
         if (userRepository.existsByUsername(request.getUsername())) {
             return new ResponseEntity<>("Username já está em uso!", HttpStatus.BAD_REQUEST);
         }
@@ -55,6 +91,25 @@ public class AuthController {
 
     // --- ENDPOINT 2/12: LOGIN E GERAÇÃO DE JWT (POST /auth/login) ---
     @PostMapping("/login")
+    @Operation(summary = "Login do usuário", description = "Autentica o usuário com credenciais e retorna um Token JWT válido.")
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "200", 
+            description = "Login bem-sucedido. Retorna o token JWT para uso futuro.",
+            content = @Content(mediaType = "application/json", 
+                               schema = @Schema(implementation = TokenResponse.class)) // Assume que TokenResponse tem o campo 'token'
+        ),
+        @ApiResponse(
+            responseCode = "401", 
+            description = "Não Autorizado: Credenciais inválidas (username ou password errados).",
+            content = @Content(mediaType = "application/json") 
+        ),
+        @ApiResponse(
+            responseCode = "400", 
+            description = "Bad Request: Requisição mal formatada ou campos vazios.",
+            content = @Content(mediaType = "application/json") 
+        )
+    })
     public ResponseEntity<String> authenticateUser(@RequestBody LoginRequest loginRequest) {
         // 1. Tenta autenticar o usuário usando o Spring Security
         Authentication authentication = authenticationManager.authenticate(
