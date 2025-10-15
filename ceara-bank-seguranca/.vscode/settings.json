@@ -1,0 +1,17 @@
+// Arquivo: .vscode/settings.json (Completo)
+{
+    // Configuração para as Extensões Java (que já fizemos)
+    "java.configuration.runtimes": [
+        {
+            "name": "JavaSE-17",
+            "path": "/home/kasm-user/jdk-25", 
+            "default": true
+        }
+    ],
+    "java.jdt.ls.java.home": "/home/kasm-user/jdk-25", 
+    
+    // --- NOVO: Variável de Ambiente para o Terminal do VS Code ---
+    "terminal.integrated.env.linux": {
+        "JAVA_HOME": "/home/kasm-user/jdk-25" 
+    }
+}
