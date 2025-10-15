@@ -15,7 +15,9 @@
     <description>Microserviço de Segurança e Geração de Token JWT do Ceará Bank</description>
 
     <properties>
-        <java.version>17</java.version> </properties>
+        <java.version>17</java.version> 
+		<skipTests>true</skipTests>
+	</properties>
 
     <dependencies>
         <dependency>

@@ -63,7 +63,7 @@ public class JwtServiceTest {
         String expiredToken = jwtService.generateToken(userDetails);
         
         // Espera para garantir que a expiração passou
-        Thread.sleep(50); 
+        Thread.sleep(1000); 
         
         // Validação (deve falhar)
         boolean isValid = jwtService.isTokenValid(expiredToken, userDetails);
