@@ -8,6 +8,10 @@ spring:
     username: postgres 
     password: postgres
     driver-class-name: org.postgresql.Driver
+  application:
+     name: ceara-bank-transfer
+  security:
+     enabled: false
   
   # Configuração JPA/Hibernate
   jpa:
@@ -25,3 +29,8 @@ springdoc:
     path: /swagger-ui.html 
   api-docs:
     path: /v3/api-docs
+
+microservicos:
+  security:
+    # URL completa do endpoint de validação no microserviço de segurança (8081)
+    url-validacao-token: http://localhost:8081/v1/seguranca/validarToken     

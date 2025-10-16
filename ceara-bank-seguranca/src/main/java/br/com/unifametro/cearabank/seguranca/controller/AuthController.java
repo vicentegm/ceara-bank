@@ -36,7 +36,7 @@ import br.com.unifametro.cearabank.seguranca.dto.TokenResponse;
 
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/v1/seguranca")
 @Tag(name = "Autenticação e Usuários", description = "Endpoints para registro de usuário e login (JWT)") // Adicione esta linha
 public class AuthController {
 
@@ -125,7 +125,7 @@ public class AuthController {
 
     // --- ENDPOINT 3/12: VALIDAÇÃO DO TOKEN (GET /auth/validate) ---
     // Este endpoint será usado pelos outros microsserviços para validar tokens
-    @GetMapping("/validate")
+    @GetMapping("/validarToken")
     public ResponseEntity<String> validateToken(Authentication authentication) {
         if (authentication != null && authentication.isAuthenticated()) {
             return ResponseEntity.ok("Token Válido para o usuário: " + authentication.getName());
