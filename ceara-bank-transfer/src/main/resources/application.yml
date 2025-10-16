@@ -1,0 +1,27 @@
+server:
+  port: 8084 # Usando porta 8083 para evitar conflito com outros serviços
+
+spring:
+  # Configuração do PostgreSQL
+  datasource:
+    url: jdbc:postgresql://192.168.154.126:5432/cearabank_db
+    username: postgres 
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+  
+  # Configuração JPA/Hibernate
+  jpa:
+    hibernate:
+      ddl-auto: update 
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+# Configuração do Swagger/OpenAPI
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html 
+  api-docs:
+    path: /v3/api-docs
