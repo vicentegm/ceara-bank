@@ -1,0 +1,13 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Debug Remoto (Porta 5005)",
+            "request": "attach", // Diz ao VS Code para 'anexar' a um processo externo
+            "hostName": "localhost",
+            "port": 5005, // Porta que o comando Maven está usando
+            "projectName": "ceara-bank-security" // Nome do seu projeto (verificado!)
+        }
+    ]
+}
