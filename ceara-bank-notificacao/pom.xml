@@ -109,6 +109,13 @@
             <scope>test</scope>
         </dependency>
 
+        <!--   
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-amqp</artifactId>
+        </dependency>
+        -->
+
     </dependencies>
 
 <build>
@@ -143,9 +150,9 @@
             <configuration>
                 <excludes>
                     <!-- Exclua arquivos específicos do projeto Contas aqui -->
-                    <exclude>**/br/com/unifametro/cearabank/contas/CearaBankContasApplication.*</exclude>
-                    <exclude>**/br/com/unifametro/cearabank/contas/dto/**</exclude>
-                    <exclude>**/br/com/unifametro/cearabank/contas/config/**</exclude>
+                    <exclude>**/br/com/unifametro/cearabank/CearaBankNotificacaoApplication.*</exclude>
+                    <exclude>**/br/com/unifametro/cearabank/notificacao/dto/**</exclude>
+                    <exclude>**/br/com/unifametro/cearabank/notificacao/config/**</exclude>
                 </excludes>
             </configuration>
         </plugin>
