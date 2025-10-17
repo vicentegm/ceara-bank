@@ -15,15 +15,23 @@ import br.com.unifametro.cearabank.transferencia.enums.TipoTransferencia;
 @AllArgsConstructor 
 public class TransferenciaRequestDTO {
 
-    @NotBlank(message = "A conta de origem é obrigatória")
-    private String contaOrigem;
+    @NotBlank(message = "O CPF/CNPJ do destinatário é obrigatório.")
+    private String documentoDestinatario; // CPF ou CNPJ do destinatário
 
-    @NotBlank(message = "A conta de destino é obrigatória")
-    private String contaDestino;
+    @NotBlank(message = "O código do banco destinatário é obrigatório.")
+    private String codigoBancoDestinatario; // Ex: 001 (BB), 104 (Caixa), etc.
+    
+    @NotBlank(message = "O número da agência do destinatário é obrigatório.")
+    private String agenciaDestinatario;
 
-    @NotNull(message = "O valor é obrigatório")
-    @DecimalMin(value = "0.01", message = "O valor deve ser positivo")
+    @NotBlank(message = "O número da conta do destinatário é obrigatório.")
+    private String contaDestinatario;
+
+    @NotNull(message = "O valor da transferência é obrigatório.")
+    @DecimalMin(value = "0.01", message = "O valor da transferência deve ser positivo.")
     private BigDecimal valor;
+
+    private String descricao;
 
     @NotNull(message = "O tipo da transferência é obrigatório (PIX, TED, DOC)")
     private TipoTransferencia tipo;

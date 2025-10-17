@@ -1,5 +1,5 @@
 server:
-  port: 8084 # Usando porta 8083 para evitar conflito com outros serviços
+  port: 8084 # Usando porta 8084
 
 spring:
   # Configuração do PostgreSQL
@@ -30,7 +30,11 @@ springdoc:
   api-docs:
     path: /v3/api-docs
 
+# --- ESTRUTURA RECOMENDADA PELO MAXO (USADA NO SERVICE) ---
 microservicos:
   security:
     # URL completa do endpoint de validação no microserviço de segurança (8081)
-    url-validacao-token: http://localhost:8081/v1/seguranca/validarToken     
+    url-validacao-token: http://localhost:8081/v1/seguranca/validarToken
+  contas:
+    # Esta chave (microservicos.contas.url) será injetada no TransferenciaService
+    url: http://localhost:8081/api/v1/contas
