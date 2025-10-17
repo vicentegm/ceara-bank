@@ -24,14 +24,18 @@ import java.util.stream.Collectors;
 public class TransferenciaService {
 
     private final TransferenciaRepository repository;
-    private final RestClient contasRestClient; // Cliente HTTP para o microserviço de Contas
+    private final RestClient contasRestClient; 
+    private final NotificacaoIntegratorService notificacaoIntegratorService; 
 
-    // Construtor para injeção de dependências (@Autowired não é necessário)
+    // Construtor para injeção de dependências
     public TransferenciaService(
             TransferenciaRepository repository, 
+            NotificacaoIntegratorService notificacaoIntegratorService, 
             @Value("${microservicos.contas.url}") String contasServiceUrl) {
         
         this.repository = repository;
+        this.notificacaoIntegratorService = notificacaoIntegratorService;
+        
         // Inicializa o RestClient com a URL base do serviço de Contas
         this.contasRestClient = RestClient.builder()
                 .baseUrl(contasServiceUrl)
@@ -52,7 +56,7 @@ public class TransferenciaService {
         );
     }
     
-    // --- LÓGICA DE INTEGRAÇÃO (AGORA COM RESTCLIENT) ---
+    // --- LÓGICA DE INTEGRAÇÃO (RESTCLIENT) ---
     
     /**
      * Busca o saldo do usuário remetente no microserviço de Contas.
@@ -70,10 +74,8 @@ public class TransferenciaService {
             throw new IllegalStateException("Resposta de saldo nula ou inválida do serviço de contas.");
             
         } catch (HttpClientErrorException.NotFound e) {
-            // Conta não encontrada no serviço de contas
             throw new IllegalArgumentException("Conta de origem não encontrada no sistema bancário.");
         } catch (Exception e) {
-            // Outros erros de comunicação ou internos do serviço de contas
             throw new IllegalStateException("Erro ao comunicar com o serviço de contas para consultar saldo: " + e.getMessage());
         }
     }
@@ -91,7 +93,6 @@ public class TransferenciaService {
         );
 
         try {
-            // Endpoint que realiza o débito e gerencia a saída (crédito)
             contasRestClient.post()
                 .uri("/debitar") 
                 .body(movimentacao)
@@ -99,10 +100,8 @@ public class TransferenciaService {
                 .toBodilessEntity(); // Espera 200/204 de sucesso
                 
         } catch (HttpClientErrorException.BadRequest e) {
-            // Se o serviço de contas retornar 400 (ex: saldo insuficiente, conta destino inválida, etc.)
             throw new IllegalArgumentException("Falha na regra de negócio da transação (Serviço de Contas): " + e.getMessage());
         } catch (Exception e) {
-            // Erro de comunicação ou erro interno
             throw new IllegalStateException("Falha crítica ao debitar e registrar a transação no serviço de contas: " + e.getMessage());
         }
     }
@@ -116,7 +115,6 @@ public class TransferenciaService {
         BigDecimal saldoAtual = consultarSaldo(remetenteUsername); 
 
         if (saldoAtual.compareTo(dto.getValor()) < 0) {
-            // Nota: O método consultarSaldo já pode lançar IllegalStateException se a conta não existir
             throw new IllegalArgumentException("Saldo insuficiente para realizar a transferência. Saldo atual: R$" + saldoAtual);
         }
         
@@ -135,7 +133,10 @@ public class TransferenciaService {
         // 4. Salva no banco de dados
         Transferencia salva = repository.save(novaTransf);
         
-        // 5. Retorna o DTO
+        // 5. NOVO: Chamada Assíncrona para Notificação
+        notificacaoIntegratorService.notificarAssincronamente(salva); // Chama o serviço para enviar à fila
+        
+        // 6. Retorna o DTO
         return toDTO(salva);
     }
     
@@ -161,25 +162,31 @@ public class TransferenciaService {
     }
 
     // Método de Negócio 5: Estorna uma transferência (Atualiza status)
+    @Transactional
     public Optional<TransferenciaResponseDTO> estornarTransferencia(String id) {
         Optional<Transferencia> transfOpt = repository.findById(id);
         
         if (transfOpt.isPresent()) {
             Transferencia transf = transfOpt.get();
+            
             // *ATENÇÃO: A lógica de REVERSÃO no serviço de contas PRECISA SER ADICIONADA AQUI*
+            
             transf.setStatus(StatusTransferencia.ESTORNADA);
             Transferencia salva = repository.save(transf);
+
+            // NOVO: Notificar o Estorno
+            notificacaoIntegratorService.notificarAssincronamente(salva); 
+
             return Optional.of(toDTO(salva));
         }
         return Optional.empty();
     }
 
     // Método de Negócio 6: Agenda uma transferência (Salva com status AGENDADA)
-    public TransferenciaResponseDTO agendarTransferencia(TransferenciaRequestDTO dto, LocalDateTime dataAgendamento) {
-        // *ATENÇÃO: Você ainda precisa passar o USERNAME do token para este método no Controller*
-        // Se este método for chamado, a conta de origem ainda será o documento do destinatário.
+    @Transactional
+    public TransferenciaResponseDTO agendarTransferencia(String remetenteUsername, TransferenciaRequestDTO dto, LocalDateTime dataAgendamento) {
         Transferencia agendada = new Transferencia();
-        agendada.setContaOrigem(dto.getDocumentoDestinatario()); 
+        agendada.setContaOrigem(remetenteUsername); 
         agendada.setContaDestino(dto.getDocumentoDestinatario() + " - " + dto.getContaDestinatario());
         agendada.setValor(dto.getValor());
         agendada.setTipo(dto.getTipo());
@@ -191,6 +198,7 @@ public class TransferenciaService {
     }
     
     // Método de Negócio 7: Cancela uma transferência agendada
+    @Transactional
     public boolean cancelarAgendamento(String id) {
         Optional<Transferencia> transfOpt = repository.findById(id);
         
@@ -204,7 +212,6 @@ public class TransferenciaService {
     // Método de Negócio 8: Consulta o resumo diário 
     public BigDecimal calcularTotalTransferidoNoDia(String data) {
         System.out.println("LOG TRANSFERENCIA: Consultando total transferido na data: " + data);
-        // Chamada real ao Repositório para somar os valores
         return repository.calcularTotalTransferidoNoDia(data)
                 .orElse(BigDecimal.ZERO); // Retorna zero se não houver transferências concluídas
     }
