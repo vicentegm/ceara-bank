@@ -32,7 +32,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import br.com.unifametro.cearabank.seguranca.dto.UserResponse;
-import br.com.unifametro.cearabank.seguranca.dto.TokenResponse; 
+import br.com.unifametro.cearabank.seguranca.dto.TokenResponse;
+import br.com.unifametro.cearabank.seguranca.dto.TokenValidationResponse; 
 
 
 @RestController
@@ -123,14 +124,31 @@ public class AuthController {
         return ResponseEntity.ok(jwt);
     }
 
-    // --- ENDPOINT 3/12: VALIDAÇÃO DO TOKEN (GET /auth/validate) ---
-    // Este endpoint será usado pelos outros microsserviços para validar tokens
-    @GetMapping("/validarToken")
-    public ResponseEntity<String> validateToken(Authentication authentication) {
-        if (authentication != null && authentication.isAuthenticated()) {
-            return ResponseEntity.ok("Token Válido para o usuário: " + authentication.getName());
-        }
-        return new ResponseEntity<>("Token Inválido ou Ausente.", HttpStatus.UNAUTHORIZED);
-    }
+    // --- ENDPOINT 3/12: VALIDAÇÃO DO TOKEN (GET /auth/validarToken) ---
+// Este endpoint será usado pelos outros microsserviços para validar tokens
+@GetMapping("/validarToken")
+public ResponseEntity<TokenValidationResponse> validarToken(Authentication authentication) {
+    if (authentication != null && authentication.isAuthenticated()) {
+        // Se a autenticação foi bem-sucedida, o Spring Security já validou o token JWT
+        // (Isso pressupõe que o filtro JWT do Spring Security já processou o token antes de chegar aqui)
+        
+        String username = authentication.getName();
+        
+        // Retorna HTTP 200 (OK) com o DTO de sucesso
+        return ResponseEntity.ok(
+            new TokenValidationResponse(true, username)
+        );
+        
+    } else {
+        // Se 'authentication' for nulo ou não autenticado, significa que o filtro JWT falhou
+        // (Ou o token está ausente, inválido ou expirado, e o Spring Security o rejeitou)
+        
+        // Retorna HTTP 401 (UNAUTHORIZED) com o DTO de falha
+        return ResponseEntity
+            .status(HttpStatus.UNAUTHORIZED)
+            .body(new TokenValidationResponse(false, "Token ausente ou inválido no cabeçalho Authorization."));
+     }
+   }
+
 
 }
