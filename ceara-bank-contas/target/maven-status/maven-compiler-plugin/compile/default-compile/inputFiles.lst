@@ -1,4 +1,4 @@
-/home/coder/project/ceara-bank-contas/src/main/java/br/com/unifametro/cearabank/contas/CearaBankContasApplication.java
+/home/coder/project/ceara-bank-contas/src/main/java/br/com/unifametro/cearabank/CearaBankContasApplication.java
 /home/coder/project/ceara-bank-contas/src/main/java/br/com/unifametro/cearabank/contas/config/AuthContext.java
 /home/coder/project/ceara-bank-contas/src/main/java/br/com/unifametro/cearabank/contas/config/OpenApiConfig.java
 /home/coder/project/ceara-bank-contas/src/main/java/br/com/unifametro/cearabank/contas/config/RestTemplateConfig.java

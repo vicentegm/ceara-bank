@@ -1,5 +1,4 @@
 br/com/unifametro/cearabank/contas/config/SecurityConfig.class
-br/com/unifametro/cearabank/contas/CearaBankContasApplication.class
 br/com/unifametro/cearabank/contas/model/Conta.class
 br/com/unifametro/cearabank/contas/config/AuthContext.class
 br/com/unifametro/cearabank/contas/service/ContaService.class
@@ -12,3 +11,4 @@ br/com/unifametro/cearabank/contas/config/RestTemplateConfig.class
 br/com/unifametro/cearabank/contas/controller/ContaController.class
 br/com/unifametro/cearabank/contas/config/RestTemplateConfig$TokenInterceptor.class
 br/com/unifametro/cearabank/contas/dto/SaldoResponseDTO.class
+br/com/unifametro/cearabank/CearaBankContasApplication.class

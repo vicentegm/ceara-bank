@@ -3,3 +3,4 @@ ceara-bank-contas,br.com.unifametro.cearabank.contas.service,ContaService,0,104,
 ceara-bank-contas,br.com.unifametro.cearabank.contas.controller,ContaController,47,0,0,0,15,0,4,0,4,0
 ceara-bank-contas,br.com.unifametro.cearabank.contas.model,Conta,0,9,0,0,0,4,0,1,0,1
 ceara-bank-contas,br.com.unifametro.cearabank.contas.filter,TokenValidationFilter,165,0,18,0,41,0,13,0,4,0
+ceara-bank-contas,br.com.unifametro.cearabank,CearaBankContasApplication,8,0,0,0,3,0,2,0,2,0

@@ -18,7 +18,7 @@ public class Conta {
     
     // Usamos o username/identificador como ID único (chave primária)
     @Id
-    private String id; // Ex: will.cearense
+    private String id; // 
 
     private String cpfTitular;
     private String nomeTitular;
