@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SecurityConfig.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ceara-bank-transfer</a> &gt; <a href="index.source.html" class="el_package">br.com.unifametro.cearabank.transferencia.config</a> &gt; <span class="el_source">SecurityConfig.java</span></div><h1>SecurityConfig.java</h1><pre class="source lang-java linenums">// src/main/java/br/com/unifametro/cearabank/transfer/config/SecurityConfig.java
+package br.com.unifametro.cearabank.transferencia.config;
+
+
+import br.com.unifametro.cearabank.transferencia.filter.TokenValidationFilter; // Novo filtro
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+    
+    // Injete o novo filtro (que criaremos no Passo 2)
+    private final TokenValidationFilter tokenValidationFilter;
+    
+<span class="nc" id="L21">    public SecurityConfig(TokenValidationFilter tokenValidationFilter) {</span>
+<span class="nc" id="L22">        this.tokenValidationFilter = tokenValidationFilter;</span>
+<span class="nc" id="L23">    }</span>
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+<span class="nc" id="L27">        http</span>
+<span class="nc" id="L28">            .csrf(csrf -&gt; csrf.disable())</span>
+<span class="nc" id="L29">            .sessionManagement(sess -&gt; sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))</span>
+            
+<span class="nc" id="L31">            .authorizeHttpRequests(authorize -&gt; authorize</span>
+                // -------------------------------------------------------------
+                // ESTA SEÇÃO DEVE SER A PRIMEIRA A SER AVALIADA!
+                // Permite acesso livre ao Swagger (documentação)
+<span class="nc" id="L35">                .requestMatchers(</span>
+                    &quot;/swagger-ui.html&quot;, 
+                    &quot;/v3/api-docs/**&quot;, 
+                    &quot;/swagger-ui/**&quot;,
+                    &quot;/webjars/**&quot; // Adicionando webjars por segurança
+<span class="nc" id="L40">                ).permitAll()</span>
+                // -------------------------------------------------------------
+                
+                // EXIGE AUTENTICAÇÃO para o restante
+<span class="nc" id="L44">                .anyRequest().authenticated()</span>
+            )
+            
+            // Adiciona nosso filtro customizado ANTES do processamento padrão do Spring Security
+<span class="nc" id="L48">            .addFilterBefore(tokenValidationFilter, UsernamePasswordAuthenticationFilter.class);</span>
+            
+<span class="nc" id="L50">        return http.build();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

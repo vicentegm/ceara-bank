@@ -1,0 +1,8 @@
+GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
+ceara-bank-transfer,br.com.unifametro.cearabank.transferencia.service,TransferenciaService,107,81,6,0,26,23,8,5,5,5
+ceara-bank-transfer,br.com.unifametro.cearabank.transferencia.enums,TipoTransferencia,0,27,0,0,0,5,0,1,0,1
+ceara-bank-transfer,br.com.unifametro.cearabank.transferencia.enums,StatusTransferencia,0,39,0,0,0,7,0,1,0,1
+ceara-bank-transfer,br.com.unifametro.cearabank.transferencia.controller,TransferenciaController,98,0,2,0,20,0,12,0,11,0
+ceara-bank-transfer,br.com.unifametro.cearabank.transferencia.filter,TokenValidationFilter,125,0,12,0,26,0,9,0,3,0
+ceara-bank-transfer,br.com.unifametro.cearabank,CearaBankTransferApplication,8,0,0,0,3,0,2,0,2,0
+ceara-bank-transfer,br.com.unifametro.cearabank.transferencia.config,SecurityConfig,58,0,0,0,12,0,5,0,5,0

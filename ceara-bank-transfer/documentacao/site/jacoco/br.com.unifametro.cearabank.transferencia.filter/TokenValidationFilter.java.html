@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TokenValidationFilter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ceara-bank-transfer</a> &gt; <a href="index.source.html" class="el_package">br.com.unifametro.cearabank.transferencia.filter</a> &gt; <span class="el_source">TokenValidationFilter.java</span></div><h1>TokenValidationFilter.java</h1><pre class="source lang-java linenums">package br.com.unifametro.cearabank.transferencia.filter;
+
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity; // NOVO: Para o corpo da requisição
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod; // NOVO: Para o método GET com cabeçalho
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import java.io.IOException;
+
+@Component
+<span class="nc" id="L21">public class TokenValidationFilter extends OncePerRequestFilter {</span>
+
+    // INJEÇÃO: Pega a URL de validação do application.yml
+    @Value(&quot;${microservicos.security.url-validacao-token}&quot;)
+    private String securityServiceValidationUrl; 
+
+<span class="nc" id="L27">    private final RestTemplate restTemplate = new RestTemplate();</span>
+<span class="nc" id="L28">    private final AntPathMatcher pathMatcher = new AntPathMatcher();</span>
+
+    // ----------------------------------------------------------------------
+    // MÉTODO PARA IGNORAR O FILTRO EM CAMINHOS ESPECÍFICOS (Swagger)
+    // ----------------------------------------------------------------------
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        // Padrões de caminhos que NÃO devem passar pela validação de Token
+<span class="nc" id="L36">        String[] excludedPaths = {</span>
+            &quot;/swagger-ui.html&quot;, 
+            &quot;/swagger-ui/**&quot;, 
+            &quot;/v3/api-docs/**&quot;
+        };
+        
+<span class="nc" id="L42">        String requestUri = request.getRequestURI();</span>
+
+<span class="nc bnc" id="L44" title="All 2 branches missed.">        for (String path : excludedPaths) {</span>
+            // Se o URI da requisição corresponder a algum caminho excluído, IGNORA o filtro.
+<span class="nc bnc" id="L46" title="All 2 branches missed.">            if (pathMatcher.match(path, requestUri)) {</span>
+<span class="nc" id="L47">                return true; </span>
+            }
+        }
+<span class="nc" id="L50">        return false; </span>
+    }
+    // ----------------------------------------------------------------------
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
+
+<span class="nc" id="L58">        String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);</span>
+
+        // 1. Verifica se o cabeçalho Authorization está presente e é do tipo Bearer
+<span class="nc bnc" id="L61" title="All 4 branches missed.">        if (authHeader != null &amp;&amp; authHeader.startsWith(&quot;Bearer &quot;)) {</span>
+            
+            // --- CÓDIGO NOVO PARA ENVIAR CABEÇALHO PARA O REST TEMPLATE ---
+            
+            // Cria o cabeçalho e adiciona o token completo (Bearer &lt;token&gt;)
+<span class="nc" id="L66">            HttpHeaders headers = new HttpHeaders();</span>
+<span class="nc" id="L67">            headers.set(HttpHeaders.AUTHORIZATION, authHeader);</span>
+<span class="nc" id="L68">            HttpEntity&lt;String&gt; entity = new HttpEntity&lt;&gt;(headers); </span>
+            
+            // --- FIM DO CÓDIGO NOVO ---
+
+            try {
+                // 2. Chama o microserviço de Segurança (8081) para validar o token
+                // Usa exchange() para enviar o cabeçalho Authorization com o Bearer Token
+<span class="nc" id="L75">                restTemplate.exchange(</span>
+                    securityServiceValidationUrl, 
+                    HttpMethod.GET, 
+                    entity, 
+                    Void.class // Não esperamos corpo na resposta (apenas status 200)
+                );
+                
+                // 3. Se a chamada retornar 200 (OK), o token é válido.
+<span class="nc" id="L83">                filterChain.doFilter(request, response);</span>
+<span class="nc" id="L84">                return;</span>
+
+<span class="nc" id="L86">            } catch (HttpClientErrorException e) {</span>
+                // 4. Se retornar 401 ou 403 do microserviço de segurança
+<span class="nc bnc" id="L88" title="All 4 branches missed.">                if (e.getStatusCode() == HttpStatus.UNAUTHORIZED || e.getStatusCode() == HttpStatus.FORBIDDEN) {</span>
+<span class="nc" id="L89">                    response.setStatus(HttpStatus.UNAUTHORIZED.value());</span>
+<span class="nc" id="L90">                    response.getWriter().write(&quot;Token inválido ou expirado.&quot;);</span>
+<span class="nc" id="L91">                    return;</span>
+                }
+                // Propaga outros erros HTTP
+<span class="nc" id="L94">                throw e; </span>
+            }
+        }
+
+        // Se não houver token ou não for Bearer, o acesso é negado (401 Unauthorized)
+<span class="nc" id="L99">        response.setStatus(HttpStatus.UNAUTHORIZED.value());</span>
+<span class="nc" id="L100">        response.getWriter().write(&quot;Acesso negado. Token Bearer não encontrado.&quot;);</span>
+<span class="nc" id="L101">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

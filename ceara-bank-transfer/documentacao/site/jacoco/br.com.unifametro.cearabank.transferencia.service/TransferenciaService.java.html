@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TransferenciaService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ceara-bank-transfer</a> &gt; <a href="index.source.html" class="el_package">br.com.unifametro.cearabank.transferencia.service</a> &gt; <span class="el_source">TransferenciaService.java</span></div><h1>TransferenciaService.java</h1><pre class="source lang-java linenums">package br.com.unifametro.cearabank.transferencia.service;
+
+import br.com.unifametro.cearabank.transferencia.dto.TransferenciaRequestDTO;
+import br.com.unifametro.cearabank.transferencia.dto.TransferenciaResponseDTO;
+import br.com.unifametro.cearabank.transferencia.enums.StatusTransferencia;
+import br.com.unifametro.cearabank.transferencia.model.Transferencia;
+import br.com.unifametro.cearabank.transferencia.repository.TransferenciaRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+@Service
+<span class="fc" id="L18">public class TransferenciaService {</span>
+
+    @Autowired
+    private TransferenciaRepository repository;
+
+    // Converte Model para DTO (Ajuda a manter a camada de Controller limpa)
+    private TransferenciaResponseDTO toDTO(Transferencia model) {
+<span class="fc" id="L25">        return new TransferenciaResponseDTO(</span>
+<span class="fc" id="L26">                model.getId(),</span>
+<span class="fc" id="L27">                model.getContaOrigem(),</span>
+<span class="fc" id="L28">                model.getContaDestino(),</span>
+<span class="fc" id="L29">                model.getValor(),</span>
+<span class="fc" id="L30">                model.getTipo(),</span>
+<span class="fc" id="L31">                model.getDataHora(),</span>
+<span class="fc" id="L32">                model.getStatus().toString() // Converte ENUM Status para String na resposta</span>
+        );
+    }
+
+    // Método de Negócio 1: Inicia uma nova transferência (Endpoint Principal)
+    public TransferenciaResponseDTO processarTransferencia(TransferenciaRequestDTO dto) {
+        // [Aqui viriam as validações de saldo e comunicação com o serviço de segurança/contas]
+        
+        // 1. Cria a entidade Transferencia a partir do DTO
+<span class="fc" id="L41">        Transferencia novaTransf = new Transferencia();</span>
+<span class="fc" id="L42">        novaTransf.setContaOrigem(dto.getContaOrigem());</span>
+<span class="fc" id="L43">        novaTransf.setContaDestino(dto.getContaDestino());</span>
+<span class="fc" id="L44">        novaTransf.setValor(dto.getValor());</span>
+<span class="fc" id="L45">        novaTransf.setTipo(dto.getTipo()); // Tipo (ENUM) já vem no DTO</span>
+<span class="fc" id="L46">        novaTransf.setDataHora(LocalDateTime.now());</span>
+        
+        // 2. Define o status inicial (Assumindo sucesso imediato para simplificação)
+<span class="fc" id="L49">        novaTransf.setStatus(StatusTransferencia.SUCESSO);</span>
+        
+        // 3. Salva no banco de dados
+<span class="fc" id="L52">        Transferencia salva = repository.save(novaTransf);</span>
+        
+        // 4. Retorna o objeto mapeado para o DTO
+<span class="fc" id="L55">        return toDTO(salva);</span>
+    }
+    
+    // Método de Negócio 2: Consulta o status de uma transferência
+    public Optional&lt;TransferenciaResponseDTO&gt; consultarStatus(String id) {
+<span class="fc" id="L60">        return repository.findById(id).map(this::toDTO);</span>
+    }
+
+    // Método de Negócio 3: Lista o extrato de transferências por conta
+    public List&lt;TransferenciaResponseDTO&gt; listarExtratoConta(String conta) {
+        // Usa o método customizado do Repository
+<span class="fc" id="L66">        List&lt;Transferencia&gt; transferencias = repository.findByContaOrigemOrContaDestinoOrderByDataHoraDesc(conta, conta);</span>
+        
+        // Mapeia a lista de Model para DTO
+<span class="fc" id="L69">        return transferencias.stream()</span>
+<span class="fc" id="L70">                             .map(this::toDTO)</span>
+<span class="fc" id="L71">                             .collect(Collectors.toList());</span>
+    }
+
+    // Método de Negócio 4: Lista todas as transferências por status (Ex: PENDENTES)
+    public List&lt;TransferenciaResponseDTO&gt; listarPorStatus(StatusTransferencia status) {
+<span class="nc" id="L76">        List&lt;Transferencia&gt; transferencias = repository.findByStatus(status);</span>
+<span class="nc" id="L77">        return transferencias.stream()</span>
+<span class="nc" id="L78">                             .map(this::toDTO)</span>
+<span class="nc" id="L79">                             .collect(Collectors.toList());</span>
+    }
+
+    // Método de Negócio 5: Estorna uma transferência (Atualiza status)
+    public Optional&lt;TransferenciaResponseDTO&gt; estornarTransferencia(String id) {
+<span class="nc" id="L84">        Optional&lt;Transferencia&gt; transfOpt = repository.findById(id);</span>
+        
+<span class="nc bnc" id="L86" title="All 2 branches missed.">        if (transfOpt.isPresent()) {</span>
+<span class="nc" id="L87">            Transferencia transf = transfOpt.get();</span>
+            // Lógica de estorno: Reverter saldo no Service de Contas e atualizar status
+<span class="nc" id="L89">            transf.setStatus(StatusTransferencia.ESTORNADA);</span>
+<span class="nc" id="L90">            Transferencia salva = repository.save(transf);</span>
+<span class="nc" id="L91">            return Optional.of(toDTO(salva));</span>
+        }
+<span class="nc" id="L93">        return Optional.empty();</span>
+    }
+
+    // Método de Negócio 6: Agenda uma transferência (Salva com status AGENDADA)
+    public TransferenciaResponseDTO agendarTransferencia(TransferenciaRequestDTO dto, LocalDateTime dataAgendamento) {
+        // Cria e salva a entidade com status de AGENDADA
+<span class="nc" id="L99">        Transferencia agendada = new Transferencia();</span>
+<span class="nc" id="L100">        agendada.setContaOrigem(dto.getContaOrigem());</span>
+<span class="nc" id="L101">        agendada.setContaDestino(dto.getContaDestino());</span>
+<span class="nc" id="L102">        agendada.setValor(dto.getValor());</span>
+<span class="nc" id="L103">        agendada.setTipo(dto.getTipo());</span>
+<span class="nc" id="L104">        agendada.setDataHora(dataAgendamento); // Usa a data futura</span>
+<span class="nc" id="L105">        agendada.setStatus(StatusTransferencia.AGENDADA);</span>
+        
+<span class="nc" id="L107">        Transferencia salva = repository.save(agendada);</span>
+<span class="nc" id="L108">        return toDTO(salva);</span>
+    }
+
+    // Método de Negócio 7: Cancela uma transferência agendada
+    public boolean cancelarAgendamento(String id) {
+<span class="nc" id="L113">        Optional&lt;Transferencia&gt; transfOpt = repository.findById(id);</span>
+        
+<span class="nc bnc" id="L115" title="All 4 branches missed.">        if (transfOpt.isPresent() &amp;&amp; transfOpt.get().getStatus() == StatusTransferencia.AGENDADA) {</span>
+<span class="nc" id="L116">            repository.delete(transfOpt.get());</span>
+<span class="nc" id="L117">            return true;</span>
+        }
+<span class="nc" id="L119">        return false;</span>
+    }
+
+    // Método de Negócio 8: Consulta o resumo diário (Simulação)
+    public BigDecimal calcularTotalTransferidoNoDia(String data) {
+        // Em um projeto real, você usaria um método no Repository para somar os valores
+        // onde a dataHora está entre 00:00 e 23:59 da data informada e o status é SUCESSO.
+        
+        // Simulação com valor estático, pois a query JPA real é mais complexa
+<span class="nc" id="L128">        return new BigDecimal(&quot;1500000.00&quot;);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TransferenciaController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ceara-bank-transfer</a> &gt; <a href="index.source.html" class="el_package">br.com.unifametro.cearabank.transferencia.controller</a> &gt; <span class="el_source">TransferenciaController.java</span></div><h1>TransferenciaController.java</h1><pre class="source lang-java linenums">package br.com.unifametro.cearabank.transferencia.controller;
+
+import br.com.unifametro.cearabank.transferencia.dto.TransferenciaRequestDTO;
+import br.com.unifametro.cearabank.transferencia.dto.TransferenciaResponseDTO;
+import br.com.unifametro.cearabank.transferencia.enums.StatusTransferencia;
+import br.com.unifametro.cearabank.transferencia.service.TransferenciaService;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
+@RestController
+@RequestMapping(&quot;/v1/transferencias&quot;)
+@Tag(name = &quot;Transferências&quot;, description = &quot;Endpoints para gerenciamento de transações financeiras (PIX, TED, DOC)&quot;)
+<span class="nc" id="L24">public class TransferenciaController {</span>
+
+    @Autowired
+    private TransferenciaService service;
+
+    // 1. Inicia uma nova transferência (Endpoint Principal)
+    @Operation(summary = &quot;Inicia uma nova transferência (PIX/TED/DOC)&quot;, 
+               description = &quot;Processa a validação e o registro imediato de uma transação. Requer Token Bearer.&quot;)
+    @PostMapping
+    public ResponseEntity&lt;TransferenciaResponseDTO&gt; iniciarTransferencia(
+            @Valid @RequestBody TransferenciaRequestDTO dto) {
+        
+<span class="nc" id="L36">        TransferenciaResponseDTO response = service.processarTransferencia(dto);</span>
+<span class="nc" id="L37">        return ResponseEntity.status(HttpStatus.CREATED).body(response);</span>
+    }
+
+    // 2. Consulta o status de uma transferência específica
+    @Operation(summary = &quot;Consulta o status de uma transferência por ID&quot;, 
+               description = &quot;Retorna os detalhes de uma transação específica pelo ID único gerado.&quot;)
+    @GetMapping(&quot;/{id}&quot;)
+    public ResponseEntity&lt;TransferenciaResponseDTO&gt; consultarStatus(
+            @Parameter(description = &quot;ID da transação&quot;, example = &quot;a1b2c3d4e5f6&quot;) @PathVariable String id) {
+        
+<span class="nc" id="L47">        Optional&lt;TransferenciaResponseDTO&gt; response = service.consultarStatus(id);</span>
+        
+<span class="nc" id="L49">        return response.map(ResponseEntity::ok)</span>
+<span class="nc" id="L50">                       .orElseGet(() -&gt; ResponseEntity.notFound().build());</span>
+    }
+
+    // 3. Lista o extrato de transferências por conta
+    @Operation(summary = &quot;Lista o extrato de transferências de uma conta&quot;, 
+               description = &quot;Retorna todas as transações de origem ou destino de uma conta específica, ordenadas pela data.&quot;)
+    @GetMapping(&quot;/extrato/{conta}&quot;)
+    public ResponseEntity&lt;List&lt;TransferenciaResponseDTO&gt;&gt; listarExtratoConta(
+            @Parameter(description = &quot;Número da conta&quot;, example = &quot;12345-X&quot;) @PathVariable String conta) {
+        
+<span class="nc" id="L60">        List&lt;TransferenciaResponseDTO&gt; extrato = service.listarExtratoConta(conta);</span>
+<span class="nc" id="L61">        return ResponseEntity.ok(extrato);</span>
+    }
+
+    // 4. Lista todas as transferências pendentes (para um painel admin)
+    @Operation(summary = &quot;Lista transações pendentes de processamento&quot;, 
+               description = &quot;Retorna uma lista de todas as transações com status PENDENTE.&quot;)
+    @GetMapping(&quot;/pendentes&quot;)
+    public ResponseEntity&lt;List&lt;TransferenciaResponseDTO&gt;&gt; listarPendentes() {
+        
+<span class="nc" id="L70">        List&lt;TransferenciaResponseDTO&gt; pendentes = service.listarPorStatus(StatusTransferencia.PENDENTE);</span>
+<span class="nc" id="L71">        return ResponseEntity.ok(pendentes);</span>
+    }
+
+    // 5. Estorna uma transferência (Geralmente via Admin/Suporte)
+    @Operation(summary = &quot;Estorna uma transação concluída&quot;, 
+               description = &quot;Altera o status da transação para ESTORNADA e dispara a lógica de reversão de fundos.&quot;)
+    @PutMapping(&quot;/estornar/{id}&quot;)
+    public ResponseEntity&lt;TransferenciaResponseDTO&gt; estornarTransferencia(
+            @Parameter(description = &quot;ID da transação a ser estornada&quot;) @PathVariable String id) {
+        
+<span class="nc" id="L81">        Optional&lt;TransferenciaResponseDTO&gt; response = service.estornarTransferencia(id);</span>
+        
+<span class="nc" id="L83">        return response.map(ResponseEntity::ok)</span>
+<span class="nc" id="L84">                       .orElseGet(() -&gt; ResponseEntity.notFound().build());</span>
+    }
+
+    // 6. Agenda uma transferência (futura)
+    @Operation(summary = &quot;Agenda uma transferência para o futuro&quot;, 
+               description = &quot;Registra uma transação com status AGENDADA para ser processada por um scheduler.&quot;)
+    @PostMapping(&quot;/agendar&quot;)
+    public ResponseEntity&lt;TransferenciaResponseDTO&gt; agendarTransferencia(
+            @Valid @RequestBody TransferenciaRequestDTO dto,
+            @Parameter(description = &quot;Data e Hora do agendamento (formato ISO)&quot;, example = &quot;2025-12-31T10:00:00&quot;) 
+            @RequestParam String dataHoraAgendamento) {
+        
+        // Simplesmente para obter um LocalDateTime a partir da String, em um projeto real usaria um @DateTimeFormat.
+<span class="nc" id="L97">        LocalDateTime dataHora = LocalDateTime.parse(dataHoraAgendamento);</span>
+        
+<span class="nc" id="L99">        TransferenciaResponseDTO response = service.agendarTransferencia(dto, dataHora);</span>
+<span class="nc" id="L100">        return ResponseEntity.status(HttpStatus.ACCEPTED).body(response); // 202 Accepted</span>
+    }
+    
+    // 7. Cancela uma transferência agendada
+    @Operation(summary = &quot;Cancela uma transferência previamente agendada&quot;, 
+               description = &quot;Remove a transação do banco de dados se o status for AGENDADA.&quot;)
+    @DeleteMapping(&quot;/agendar/{id}&quot;)
+    public ResponseEntity&lt;Void&gt; cancelarAgendamento(
+            @Parameter(description = &quot;ID da transação agendada&quot;) @PathVariable String id) {
+        
+<span class="nc" id="L110">        boolean cancelado = service.cancelarAgendamento(id);</span>
+        
+<span class="nc bnc" id="L112" title="All 2 branches missed.">        return cancelado ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();</span>
+    }
+    
+    // 8. Consulta o resumo diário de transferências (para relatórios)
+    @Operation(summary = &quot;Calcula o volume total de transferências em um dia&quot;, 
+               description = &quot;Retorna a soma dos valores de todas as transações concluídas (SUCESSO) na data especificada.&quot;)
+    @GetMapping(&quot;/resumo/diario&quot;)
+    public ResponseEntity&lt;String&gt; getResumoDiario(
+            @Parameter(description = &quot;Data para consulta (formato YYYY-MM-DD)&quot;, example = &quot;2025-10-16&quot;) @RequestParam String data) {
+        
+        // O Service retorna o valor, aqui apenas formatamos a resposta
+<span class="nc" id="L123">        String valorFormatado = &quot;R$ &quot; + service.calcularTotalTransferidoNoDia(data).toString();</span>
+        
+<span class="nc" id="L125">        return ResponseEntity.ok(&quot;Resumo diário para &quot; + data + &quot;: &quot; + valorFormatado);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>
