@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ContaService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ceara-bank-contas</a> &gt; <a href="index.source.html" class="el_package">br.com.unifametro.cearabank.contas.service</a> &gt; <span class="el_source">ContaService.java</span></div><h1>ContaService.java</h1><pre class="source lang-java linenums">package br.com.unifametro.cearabank.contas.service;
+
+import br.com.unifametro.cearabank.contas.dto.MovimentacaoRequestDTO;
+import br.com.unifametro.cearabank.contas.dto.SaldoResponseDTO;
+import br.com.unifametro.cearabank.contas.model.Conta;
+import br.com.unifametro.cearabank.contas.repository.ContaRepository;
+import jakarta.transaction.Transactional;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+
+/**
+ * Camada de serviço responsável pela lógica de Contas e Saldos.
+ */
+@Service
+public class ContaService {
+
+    private final ContaRepository repository;
+
+<span class="fc" id="L20">    public ContaService(ContaRepository repository) {</span>
+<span class="fc" id="L21">        this.repository = repository;</span>
+<span class="fc" id="L22">    }</span>
+
+    /**
+     * Retorna o saldo e o nome do titular da conta.
+     * @param contaId O ID da conta (username).
+     * @return DTO com saldo e titular.
+     * @throws IllegalArgumentException se a conta não for encontrada.
+     */
+    public SaldoResponseDTO consultarSaldo(String contaId) {
+        // Busca a conta pelo ID e lança exceção se não existir
+<span class="fc" id="L32">        Conta conta = repository.findById(contaId)</span>
+<span class="fc" id="L33">                .orElseThrow(() -&gt; new IllegalArgumentException(&quot;Conta não encontrada.&quot;));</span>
+
+<span class="fc" id="L35">        return new SaldoResponseDTO(conta.getSaldo(), conta.getNomeTitular());</span>
+    }
+
+    /**
+     * Processa a movimentação de débito de forma atômica e transacional.
+     * @param request DTO com informações da movimentação.
+     * @throws IllegalArgumentException se a conta não for encontrada ou saldo for insuficiente.
+     */
+    @Transactional
+    public void processarDebito(MovimentacaoRequestDTO request) {
+<span class="fc" id="L45">        Conta conta = repository.findById(request.getContaOrigem())</span>
+<span class="fc" id="L46">                .orElseThrow(() -&gt; new IllegalArgumentException(&quot;Conta de origem não encontrada.&quot;));</span>
+
+        // 1. Validação de Saldo
+<span class="fc bfc" id="L49" title="All 2 branches covered.">        if (conta.getSaldo().compareTo(request.getValor()) &lt; 0) {</span>
+<span class="fc" id="L50">            throw new IllegalArgumentException(&quot;Saldo insuficiente para o débito.&quot;);</span>
+        }
+
+        // 2. Realiza o Débito
+<span class="fc" id="L54">        conta.setSaldo(conta.getSaldo().subtract(request.getValor()));</span>
+        
+<span class="fc" id="L56">        System.out.println(&quot;LOG CONTAS: Débito de R$&quot; + request.getValor() + </span>
+<span class="fc" id="L57">                           &quot; da conta &quot; + conta.getId() + &quot; processado. &quot; +</span>
+<span class="fc" id="L58">                           &quot;Tipo: &quot; + request.getTipoTransacao() + &quot;.&quot;);</span>
+
+        // 3. Salva a alteração
+<span class="fc" id="L61">        repository.save(conta);</span>
+<span class="fc" id="L62">    }</span>
+    
+    /**
+     * Método utilitário para criar contas iniciais para testes rápidos.
+     */
+    @Transactional
+    public void criarContaTeste(String id, BigDecimal saldoInicial) {
+<span class="fc bfc" id="L69" title="All 2 branches covered.">        if (repository.existsById(id)) return; // Evita duplicidade</span>
+
+<span class="fc" id="L71">        Conta conta = new Conta();</span>
+<span class="fc" id="L72">        conta.setId(id);</span>
+<span class="fc" id="L73">        conta.setSaldo(saldoInicial);</span>
+<span class="fc" id="L74">        conta.setNomeTitular(&quot;Aluno Teste &quot; + id);</span>
+<span class="fc" id="L75">        conta.setCpfTitular(&quot;00000000000&quot;); </span>
+<span class="fc" id="L76">        repository.save(conta);</span>
+<span class="fc" id="L77">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

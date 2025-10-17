@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: br.com.unifametro.cearabank.contas.service.ContaServiceTest
+-------------------------------------------------------------------------------
+Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.939 s -- in br.com.unifametro.cearabank.contas.service.ContaServiceTest

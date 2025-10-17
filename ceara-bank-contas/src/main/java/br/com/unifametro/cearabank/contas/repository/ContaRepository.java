@@ -2,10 +2,12 @@ package br.com.unifametro.cearabank.contas.repository;
 
 import br.com.unifametro.cearabank.contas.model.Conta;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 /**
- * Repositório para operações de persistência da entidade Conta.
+ * Interface Repository para operações de CRUD da entidade Conta, usando String (Username/ID) como chave primária.
  */
+@Repository
 public interface ContaRepository extends JpaRepository<Conta, String> {
-    // Métodos findById, save, etc., são herdados automaticamente.
+    // A chave primária é String, então herdamos findById(String id).
 }

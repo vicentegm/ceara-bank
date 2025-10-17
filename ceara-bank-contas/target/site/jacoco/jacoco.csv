@@ -1,0 +1,5 @@
+GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
+ceara-bank-contas,br.com.unifametro.cearabank.contas.service,ContaService,0,104,0,4,0,24,0,8,0,6
+ceara-bank-contas,br.com.unifametro.cearabank.contas.controller,ContaController,47,0,0,0,15,0,4,0,4,0
+ceara-bank-contas,br.com.unifametro.cearabank.contas.model,Conta,0,9,0,0,0,4,0,1,0,1
+ceara-bank-contas,br.com.unifametro.cearabank.contas.filter,TokenValidationFilter,165,0,18,0,41,0,13,0,4,0

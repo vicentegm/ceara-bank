@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ContaController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ceara-bank-contas</a> &gt; <a href="index.source.html" class="el_package">br.com.unifametro.cearabank.contas.controller</a> &gt; <span class="el_source">ContaController.java</span></div><h1>ContaController.java</h1><pre class="source lang-java linenums">package br.com.unifametro.cearabank.contas.controller;
+
+import br.com.unifametro.cearabank.contas.dto.MovimentacaoRequestDTO;
+import br.com.unifametro.cearabank.contas.dto.SaldoResponseDTO;
+import br.com.unifametro.cearabank.contas.service.ContaService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.math.BigDecimal;
+
+@RestController
+@RequestMapping(&quot;/api/v1/contas&quot;)
+@Tag(name = &quot;Contas&quot;, description = &quot;Endpoints para consulta de saldo e movimentação atômica de contas.&quot;)
+public class ContaController {
+
+    private final ContaService service;
+
+<span class="nc" id="L21">    public ContaController(ContaService service) {</span>
+<span class="nc" id="L22">        this.service = service;</span>
+<span class="nc" id="L23">    }</span>
+
+    /**
+     * Consulta o saldo de uma conta pelo username. Usado pelo microserviço de Transferência.
+     */
+    @Operation(summary = &quot;Consulta Saldo por Username&quot;,
+               description = &quot;Endpoint interno que retorna o saldo e titular de uma conta.&quot;)
+    @GetMapping(&quot;/saldo/{username}&quot;)
+    public ResponseEntity&lt;SaldoResponseDTO&gt; consultarSaldo(@PathVariable(&quot;username&quot;) String username) {
+        try {
+<span class="nc" id="L33">            SaldoResponseDTO response = service.consultarSaldo(username);</span>
+<span class="nc" id="L34">            return ResponseEntity.ok(response);</span>
+<span class="nc" id="L35">        } catch (IllegalArgumentException e) {</span>
+            // Conta não encontrada
+<span class="nc" id="L37">            return ResponseEntity.notFound().build();</span>
+        }
+    }
+
+    /**
+     * Realiza o débito na conta de origem após validação de saldo. Operação atômica.
+     */
+    @Operation(summary = &quot;Realiza Débito Atômico&quot;,
+               description = &quot;Endpoint interno para debitar o valor de uma conta. Retorna 204 se sucesso.&quot;)
+    @PostMapping(&quot;/debitar&quot;)
+    public ResponseEntity&lt;Void&gt; processarDebito(@RequestBody MovimentacaoRequestDTO request) {
+        try {
+<span class="nc" id="L49">            service.processarDebito(request);</span>
+            // Retorna 204 No Content para indicar sucesso sem corpo de resposta
+<span class="nc" id="L51">            return ResponseEntity.noContent().build();</span>
+<span class="nc" id="L52">        } catch (IllegalArgumentException e) {</span>
+            // Erro de negócio (Conta não existe ou Saldo Insuficiente)
+<span class="nc" id="L54">            return ResponseEntity.badRequest().build();</span>
+<span class="nc" id="L55">        } catch (Exception e) {</span>
+            // Erro de sistema
+<span class="nc" id="L57">            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();</span>
+        }
+    }
+    
+    /**
+     * Endpoint utilitário para adicionar uma conta ao banco de dados (apenas para testes iniciais).
+     */
+    @Operation(summary = &quot;Adiciona Conta para Teste (Utilitário)&quot;,
+               description = &quot;Cria uma conta com saldo inicial para fins de teste e desenvolvimento.&quot;)
+    @PostMapping(&quot;/criarContaTeste&quot;)
+    public ResponseEntity&lt;String&gt; criarContaTeste(@RequestParam String id, @RequestParam BigDecimal saldoInicial) {
+<span class="nc" id="L68">        service.criarContaTeste(id, saldoInicial);</span>
+<span class="nc" id="L69">        return ResponseEntity.status(HttpStatus.CREATED).body(&quot;Conta &quot; + id + &quot; criada com saldo: &quot; + saldoInicial);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>
