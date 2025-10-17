@@ -201,9 +201,11 @@ public class TransferenciaService {
         return false;
     }
 
-    // Método de Negócio 8: Consulta o resumo diário (Simulação)
+    // Método de Negócio 8: Consulta o resumo diário 
     public BigDecimal calcularTotalTransferidoNoDia(String data) {
-        // Implementação real usaria o Repository
-        return new BigDecimal("1500000.00");
+        System.out.println("LOG TRANSFERENCIA: Consultando total transferido na data: " + data);
+        // Chamada real ao Repositório para somar os valores
+        return repository.calcularTotalTransferidoNoDia(data)
+                .orElse(BigDecimal.ZERO); // Retorna zero se não houver transferências concluídas
     }
 }

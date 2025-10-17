@@ -1,8 +1,11 @@
 package br.com.unifametro.cearabank.transferencia.repository;
 
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import br.com.unifametro.cearabank.transferencia.enums.StatusTransferencia;
@@ -14,4 +17,12 @@ public interface TransferenciaRepository extends JpaRepository<Transferencia, St
     List<Transferencia> findByContaOrigemOrContaDestinoOrderByDataHoraDesc(String contaOrigem, String contaDestino);
 
     List<Transferencia> findByStatus(StatusTransferencia status);
+
+    /**
+     * Calcula o valor total transferido com sucesso em uma determinada data.
+     * @param dataString A data no formato String (ex: '2025-10-17').
+     * @return O somatório dos valores.
+     */
+    @Query(value = "SELECT SUM(t.valor) FROM Transferencia t WHERE DATE_FORMAT(t.dataTransacao, '%Y-%m-%d') = :dataString AND t.status = 'CONCLUIDA'")
+    Optional<BigDecimal> calcularTotalTransferidoNoDia(String dataString);
 }
