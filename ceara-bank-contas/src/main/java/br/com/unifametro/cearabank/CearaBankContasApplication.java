@@ -1,4 +1,4 @@
-package br.com.unifametro.cearabank.contas;
+package br.com.unifametro.cearabank;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
