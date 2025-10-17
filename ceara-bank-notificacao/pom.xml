@@ -24,6 +24,7 @@
         <jacoco.version>0.8.11</jacoco.version>
         <surefire.version>3.2.5</surefire.version>
         <compiler.version>3.13.0</compiler.version>
+        <springdoc.version>2.6.0</springdoc.version>
     </properties>
 
     <dependencies>
@@ -53,25 +54,40 @@
             <optional>true</optional>
         </dependency>
         
-        <!-- 5. Actuator (Monitoramento, Health Checks) -->
+        <!-- 5. Spring Security (Para proteger os endpoints internos) -->
+         <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+        
+        <!-- 6. Actuator (Monitoramento, Health Checks) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
 
-        <!-- 6. Swagger/OpenAPI (Documentação) -->
+        <!-- 7. Swagger/OpenAPI (Documentação) -->
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-            <version>2.6.0</version> 
+            <version>${springdoc.version}</version> 
         </dependency>
         
-        <!-- 7. Testes -->
+        <!-- 8. Testes (Inclui JUnit, Mockito, Spring Test) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+        
+        <!-- 9. Mocks de Segurança para Testes -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- 10. Testcontainers para PostgreSQL (Testes de Integração) -->
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>postgresql</artifactId>
@@ -82,34 +98,11 @@
             <artifactId>junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
-
-        <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-
-         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-security</artifactId>
-        </dependency>
         
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <version>5.6.0</version>
-            <scope>test</scope>
-        </dependency>
+        <!-- Dependências de teste explícitas removidas para evitar conflitos de versão
+             com o spring-boot-starter-test: mockito-core, junit-jupiter -->
 
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <version>5.9.3</version>
-            <scope>test</scope>
-        </dependency>
-
-        <!--   
+        <!-- AMQP/RabbitMQ comentado, conforme decisão de usar simulação Thread.sleep
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-amqp</artifactId>

@@ -1,0 +1,18 @@
+-------------------------------------------------------------------------------
+Test set: br.com.unifametro.cearabank.controller.notificacao.NotificacaoControllerTest
+-------------------------------------------------------------------------------
+Tests run: 1, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 0.348 s <<< FAILURE! -- in br.com.unifametro.cearabank.controller.notificacao.NotificacaoControllerTest
+br.com.unifametro.cearabank.controller.notificacao.NotificacaoControllerTest -- Time elapsed: 0.348 s <<< ERROR!
+java.lang.IllegalStateException: Failed to find merged annotation for @org.springframework.test.context.BootstrapWith(org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTestContextBootstrapper.class)
+	at org.springframework.util.Assert.state(Assert.java:97)
+	at org.springframework.test.context.TestContextAnnotationUtils$AnnotationDescriptor.<init>(TestContextAnnotationUtils.java:520)
+	at org.springframework.test.context.TestContextAnnotationUtils.findAnnotationDescriptor(TestContextAnnotationUtils.java:259)
+	at org.springframework.test.context.TestContextAnnotationUtils.findAnnotationDescriptor(TestContextAnnotationUtils.java:221)
+	at org.springframework.test.context.BootstrapUtils.resolveExplicitTestContextBootstrapper(BootstrapUtils.java:175)
+	at org.springframework.test.context.BootstrapUtils.resolveTestContextBootstrapper(BootstrapUtils.java:150)
+	at org.springframework.test.context.BootstrapUtils.resolveTestContextBootstrapper(BootstrapUtils.java:126)
+	at org.springframework.test.context.TestContextManager.<init>(TestContextManager.java:126)
+	at org.springframework.test.context.junit.jupiter.SpringExtension.getTestContextManager(SpringExtension.java:366)
+	at org.springframework.test.context.junit.jupiter.SpringExtension.beforeAll(SpringExtension.java:131)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+

@@ -1,15 +1,16 @@
-package br.com.unifametro.cearabank; 
+package br.com.unifametro.cearabank;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.ComponentScan;
+import org.springframework.scheduling.annotation.EnableAsync;
 
 /**
- * Classe principal do microserviço Ceará Bank Notificação.
- * A anotação ComponentScan é essencial para evitar o erro de Bean duplicado.
+ * Aplicação principal do microserviço CearaBank - Notificacao.
+ * O pacote base (br.com.unifametro.cearabank) garante o Component Scan de 
+ * todos os sub-pacotes (notificacao.controller, notificacao.service, etc.).
  */
 @SpringBootApplication
-@ComponentScan(basePackages = "br.com.unifametro.cearabank") // Garante que o Spring escaneie o pacote base corretamente
+@EnableAsync // Habilita a execução assíncrona para simular o processamento
 public class CearaBankNotificacaoApplication {
 
     public static void main(String[] args) {
