@@ -1,7 +1,7 @@
 package br.com.unifametro.cearabank.transferencia.service;
 
 import br.com.unifametro.cearabank.transferencia.model.Transferencia;
-import br.com.unifametro.cearabank.transferencia.dto.NotificacaoRequestDTO; 
+import br.com.unifametro.cearabank.transferencia.dto.notificacao.NotificacaoRequestDTO;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;

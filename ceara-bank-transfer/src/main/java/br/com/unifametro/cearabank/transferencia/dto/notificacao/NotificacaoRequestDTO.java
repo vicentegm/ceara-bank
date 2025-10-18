@@ -1,4 +1,4 @@
-package br.com.unifametro.cearabank.dto.notificacao;
+package br.com.unifametro.cearabank.transferencia.dto.notificacao;
 
 import lombok.Data;
 import lombok.AllArgsConstructor;

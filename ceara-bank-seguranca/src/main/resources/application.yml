@@ -4,7 +4,7 @@ server:
 spring:
   # Configuração do PostgreSQL
   datasource:
-    url: jdbc:postgresql://192.168.154.126:5432/cearabank_db
+    url: jdbc:postgresql://10.5.80.171:5434/ceara-bank-db
     username: postgres 
     password: postgres
     driver-class-name: org.postgresql.Driver
