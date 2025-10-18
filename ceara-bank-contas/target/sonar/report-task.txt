@@ -1,0 +1,6 @@
+projectKey=ceara-bank-contas
+serverUrl=http://10.5.80.171:9000
+serverVersion=25.10.0.114319
+dashboardUrl=http://10.5.80.171:9000/dashboard?id=ceara-bank-contas
+ceTaskId=71e6f165-b665-46da-98cb-c9b1ccd2dabd
+ceTaskUrl=http://10.5.80.171:9000/api/ce/task?id=71e6f165-b665-46da-98cb-c9b1ccd2dabd
