@@ -131,7 +131,7 @@
             </executions>
             <configuration>
                 <excludes>
-                    <exclude>**/br/com/unifametro/cearabank/transfer/CearaBankTransferApplication.*</exclude>
+                    <exclude>**/br/com/unifametro/cearabank/CearaBankTransferApplication.*</exclude>
                     <exclude>**/br/com/unifametro/cearabank/transfer/dto/**</exclude>
                     <exclude>**/br/com/unifametro/cearabank/transfer/enums/**</exclude>
                     <exclude>**/br/com/unifametro/cearabank/transfer/config/**</exclude>
