@@ -23,6 +23,6 @@ public interface TransferenciaRepository extends JpaRepository<Transferencia, St
      * @param dataString A data no formato String (ex: '2025-10-17').
      * @return O somatório dos valores.
      */
-    @Query(value = "SELECT SUM(t.valor) FROM Transferencia t WHERE DATE_FORMAT(t.dataTransacao, '%Y-%m-%d') = :dataString AND t.status = 'CONCLUIDA'")
+    @Query(value = "SELECT SUM(t.valor) FROM Transferencia t WHERE t.data_transacao::date = :dataString::date AND t.status = 'CONCLUIDA'", nativeQuery = true)
     Optional<BigDecimal> calcularTotalTransferidoNoDia(String dataString);
 }
