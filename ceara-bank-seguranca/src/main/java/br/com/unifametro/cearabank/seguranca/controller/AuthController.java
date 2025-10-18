@@ -149,6 +149,4 @@ public ResponseEntity<TokenValidationResponse> validarToken(Authentication authe
             .body(new TokenValidationResponse(false, "Token ausente ou inválido no cabeçalho Authorization."));
      }
    }
-
-
 }

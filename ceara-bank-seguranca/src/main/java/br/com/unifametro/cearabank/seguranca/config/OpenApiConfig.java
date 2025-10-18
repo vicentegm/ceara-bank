@@ -25,7 +25,7 @@ import io.swagger.v3.oas.annotations.servers.Server;
     ),
     // Define os servidores onde a API pode ser acessada
     servers = {
-        @Server(url = "http://172.17.0.3:8082", description = "Servidor Local (Desenvolvimento)"),
+        @Server(url = "http://10.5.41.32:8082", description = "Servidor Local (Desenvolvimento)"),
         @Server(url = "https://api.cearabank.com/security", description = "Servidor de Produção (Exemplo)")
     }
 )
