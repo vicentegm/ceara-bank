@@ -18,7 +18,6 @@ import br.com.unifametro.cearabank.seguranca.service.JwtService;
 
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
-
     private final JwtService jwtService;
     private final UserDetailsServiceImpl userDetailsService;
 
@@ -28,48 +27,32 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(
-            @NonNull HttpServletRequest request,
-            @NonNull HttpServletResponse response,
-            @NonNull FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) 
+            throws ServletException, IOException {
 
-        final String authHeader = request.getHeader("Authorization");
-        final String jwt;
-        final String username;
+        String uri = request.getRequestURI();
+        String authHeader = request.getHeader("Authorization");
+        
+        System.out.println("DEBUG: Requisição para: " + uri);
+        System.out.println("DEBUG: Header Authorization: " + (authHeader != null ? "PRESENTE" : "NULO"));
 
-        // 1. Checa se o Header Authorization existe e começa com "Bearer "
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            System.out.println("DEBUG: Filtro passou (sem token ou formato errado)");
             filterChain.doFilter(request, response);
             return;
         }
 
-        // 2. Extrai o Token JWT (Ignora o "Bearer ")
-        jwt = authHeader.substring(7);
-        // 3. Extrai o username do token (NOTA: Você precisará completar o JwtService com o método extractUsername)
-        // username = jwtService.extractUsername(jwt);
-        username = "simulador"; // AQUI VOCÊ TERÁ QUE MUDAR APÓS COMPLETAR O JwtService!
+        final String jwt = authHeader.substring(7);
+        final String username = jwtService.extractUsername(jwt);
         
-        // 4. Valida se o usuário existe e não está autenticado ainda
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
-            
-            // Simular Validação do Token (NOTA: Você terá que completar o JwtService com o método isTokenValid)
-            // if (jwtService.isTokenValid(jwt, userDetails)) {
-            if (true) { // Simulando token válido por enquanto
-                
-                // Cria o objeto de Autenticação para o Spring Security
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        userDetails,
-                        null,
-                        userDetails.getAuthorities()
-                );
-                authToken.setDetails(
-                        new WebAuthenticationDetailsSource().buildDetails(request)
-                );
-                // Define o usuário como autenticado no contexto de segurança
+            if (jwtService.isTokenValid(jwt, userDetails)) {
+                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
         }
         filterChain.doFilter(request, response);
-    }
+    }    
 }

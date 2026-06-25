@@ -13,24 +13,25 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter; // NÃO ESQUECE ESSE!
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
     private final UserDetailsServiceImpl userDetailsService;
+    private final JwtAuthFilter jwtAuthFilter; // Agora injetado corretamente
 
-    public SecurityConfig(UserDetailsServiceImpl userDetailsService) {
+    public SecurityConfig(UserDetailsServiceImpl userDetailsService, JwtAuthFilter jwtAuthFilter) {
         this.userDetailsService = userDetailsService;
+        this.jwtAuthFilter = jwtAuthFilter;
     }
 
-    // 1. BEAN para CRIPTOGRAFIA de SENHA
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    // 2. BEAN para GERENCIADOR de AUTENTICAÇÃO (necessário no AuthController)
     @Bean
     public AuthenticationManager authenticationManager() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
@@ -39,24 +40,20 @@ public class SecurityConfig {
         return new ProviderManager(authProvider);
     }
 
-    // 3. SECURITY FILTER CHAIN (Regras de acesso)
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(AbstractHttpConfigurer::disable) // Desabilitar CSRF para APIs REST
+            .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(auth -> auth
-                // Permite acesso público a URLs de registro e login
-                .requestMatchers("/auth/**").permitAll()
-                // Permite acesso público ao Swagger (documentação)
+                .requestMatchers("/v1/seguranca/users", "/v1/seguranca/login").permitAll()
+                .requestMatchers("/actuator/**").permitAll()
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                // Todas as outras requisições devem ser autenticadas
+                .requestMatchers("/api/usuarios/**").authenticated()
                 .anyRequest().authenticated()
             )
-            .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS)); // JWT é stateless
-
-        // OBS: O filtro JWT (JwtAuthFilter) será adicionado aqui, mas ele será implementado em outro momento,
-        // pois neste microserviço ele só precisa validar a si mesmo, e não ser chamado por terceiros.
-        
+            .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+            
         return http.build();
     }
 }

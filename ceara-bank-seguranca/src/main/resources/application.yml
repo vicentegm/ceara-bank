@@ -4,9 +4,9 @@ server:
 spring:
   # Configuração do PostgreSQL
   datasource:
-    url: jdbc:postgresql://192.168.154.126:5432/cearabank_db
+    url: jdbc:postgresql://server-cearabank.postgres.database.azure.com:5432/postgres
     username: postgres 
-    password: postgres
+    password: Unifametro@2026
     driver-class-name: org.postgresql.Driver
   
   # Configuração JPA/Hibernate
