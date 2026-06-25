@@ -1,12 +1,12 @@
 server:
-  port: 8085 # Usando porta 8085
+  port: 8081 # Usando porta 8085
 
 spring:
   # Configuração do PostgreSQL
   datasource:
-    url: jdbc:postgresql://192.168.154.126:5432/cearabank_db
+    url: jdbc:postgresql://server-cearabank.postgres.database.azure.com:5432/postgres
     username: postgres 
-    password: postgres
+    password: Unifametro@2026
     driver-class-name: org.postgresql.Driver
   application:
      name: ceara-bank-transfer
@@ -34,4 +34,4 @@ springdoc:
 microservicos:
   security:
     # URL completa do endpoint de validação no microserviço de segurança (8081)
-    url-validacao-token: http://localhost:8081/v1/seguranca/validarToken
+    url-validacao-token: http://localhost:8082/v1/seguranca/validarToken
