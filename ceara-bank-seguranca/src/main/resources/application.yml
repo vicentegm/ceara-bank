@@ -1,12 +1,12 @@
 server:
-  port: 8082 # Usando porta 8081 para evitar conflito com outros serviços
+  port: ${PORT:8082} # Usando porta 8081 para evitar conflito com outros serviços
 
 spring:
   # Configuração do PostgreSQL
   datasource:
-    url: jdbc:postgresql://server-cearabank.postgres.database.azure.com:5432/postgres
-    username: postgres 
-    password: Unifametro@2026
+    url: ${DB_URL:jdbc:postgresql://server-cearabank.postgres.database.azure.com:5432/postgres}
+    username: ${DB_USERNAME:postgres} 
+    password: ${DB_PASSWORD:Unifametro@2026}
     driver-class-name: org.postgresql.Driver
   
   # Configuração JPA/Hibernate
