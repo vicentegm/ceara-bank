@@ -8,118 +8,87 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Collections;
 
 @Component
-<span class="nc" id="L20">public class TokenValidationFilter extends OncePerRequestFilter {</span>
+<span class="nc" id="L22">public class TokenValidationFilter extends OncePerRequestFilter {</span>
 
     @Value(&quot;${microservicos.security.url-validacao-token}&quot;)
     private String securityServiceValidationUrl; 
 
-<span class="nc" id="L25">    private final RestTemplate restTemplate = new RestTemplate();</span>
-<span class="nc" id="L26">    private final AntPathMatcher pathMatcher = new AntPathMatcher();</span>
+<span class="nc" id="L27">    private final RestTemplate restTemplate = new RestTemplate();</span>
+<span class="nc" id="L28">    private final AntPathMatcher pathMatcher = new AntPathMatcher();</span>
     
-    // Constante para o nome do atributo onde o username será armazenado
     public static final String USERNAME_ATTRIBUTE = &quot;authenticatedUsername&quot;;
 
-    @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
-        // Padrões de caminhos que NÃO devem passar pela validação de Token
-<span class="nc" id="L34">        String[] excludedPaths = {</span>
-            &quot;/swagger-ui.html&quot;, 
-            &quot;/swagger-ui/**&quot;, 
-            &quot;/v3/api-docs/**&quot;,
-            &quot;/actuator/**&quot; 
-        };
-        
-<span class="nc" id="L41">        String requestUri = request.getRequestURI();</span>
-
-<span class="nc bnc" id="L43" title="All 2 branches missed.">        for (String path : excludedPaths) {</span>
-<span class="nc bnc" id="L44" title="All 2 branches missed.">            if (pathMatcher.match(path, requestUri)) {</span>
-<span class="nc" id="L45">                return true; </span>
-            }
-        }
-<span class="nc" id="L48">        return false; </span>
-    }
+    // Define os caminhos que não precisam de token
+<span class="nc" id="L33">    private static final String[] PUBLIC_URLS = {&quot;/actuator/**&quot;, &quot;/robots[0-9]+\\.txt&quot;};</span>
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-<span class="nc" id="L55">        String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);</span>
-<span class="nc" id="L56">        String token = null;</span>
-
-<span class="nc bnc" id="L58" title="All 4 branches missed.">        if (authHeader != null &amp;&amp; authHeader.startsWith(&quot;Bearer &quot;)) {</span>
-<span class="nc" id="L59">            token = authHeader; // Mantém o token completo (Bearer &lt;jwt&gt;)</span>
-        }
-
-        try {
-<span class="nc bnc" id="L63" title="All 2 branches missed.">            if (token != null) {</span>
-                // *** 1. AÇÃO CRÍTICA: REPASSA O TOKEN PARA O CONTEXTO DA THREAD ***
-<span class="nc" id="L65">                AuthContext.setToken(token); </span>
-                
-<span class="nc" id="L67">                HttpHeaders headers = new HttpHeaders();</span>
-                // Passamos o token completo para o microsserviço de segurança para validação
-<span class="nc" id="L69">                headers.set(HttpHeaders.AUTHORIZATION, token);</span>
-<span class="nc" id="L70">                HttpEntity&lt;String&gt; entity = new HttpEntity&lt;&gt;(headers); </span>
-                
-                try {
-                    // 2. Chama o microserviço de Segurança para validar
-<span class="nc" id="L74">                    ResponseEntity&lt;TokenValidationResponse&gt; validationResponse = restTemplate.exchange(</span>
-                        securityServiceValidationUrl, 
-                        HttpMethod.GET, 
-                        entity, 
-                        TokenValidationResponse.class
-                    );
-                    
-<span class="nc" id="L81">                    TokenValidationResponse body = validationResponse.getBody();</span>
-                    
-                    // 3. Se válido, injeta o username na requisição e continua a cadeia
-<span class="nc bnc" id="L84" title="All 4 branches missed.">                    if (validationResponse.getStatusCode() == HttpStatus.OK &amp;&amp; </span>
-<span class="nc bnc" id="L85" title="All 2 branches missed.">                        body != null &amp;&amp; body.isValid() &amp;&amp; </span>
-<span class="nc bnc" id="L86" title="All 2 branches missed.">                        body.getUsername() != null) {</span>
-                        
-<span class="nc" id="L88">                        request.setAttribute(USERNAME_ATTRIBUTE, body.getUsername());</span>
-                        
-<span class="nc" id="L90">                        filterChain.doFilter(request, response);</span>
-<span class="nc" id="L91">                        return;</span>
-
-                    } else {
-<span class="nc" id="L94">                        sendUnauthorized(response, &quot;Token JWT inválido, mas serviço de segurança retornou OK.&quot;);</span>
-<span class="nc" id="L95">                        return;</span>
-                    }
-
-<span class="nc" id="L98">                } catch (HttpClientErrorException e) {</span>
-                    // Erro 401 ou 403 do serviço de segurança
-<span class="nc" id="L100">                    sendUnauthorized(response, &quot;Token JWT inválido ou expirado.&quot;);</span>
-<span class="nc" id="L101">                    return;</span>
-<span class="nc" id="L102">                } catch (Exception e) {</span>
-                     // Erro de I/O ou comunicação
-<span class="nc" id="L104">                     sendUnauthorized(response, &quot;Erro de rede/comunicação durante a validação do token.&quot;);</span>
-<span class="nc" id="L105">                     return;</span>
-                }
+<span class="nc" id="L39">        String requestURI = request.getRequestURI();</span>
+        
+        // Verifica se é uma rota pública
+<span class="nc bnc" id="L42" title="All 2 branches missed.">        for (String url : PUBLIC_URLS) {</span>
+<span class="nc bnc" id="L43" title="All 2 branches missed.">            if (pathMatcher.match(url, requestURI)) {</span>
+<span class="nc" id="L44">                filterChain.doFilter(request, response); // Passa direto, não valida nada</span>
+<span class="nc" id="L45">                return;</span>
             }
-
-            // 4. Se não houver token
-<span class="nc" id="L110">            sendUnauthorized(response, &quot;Acesso negado. Token Bearer não encontrado no cabeçalho Authorization.&quot;);</span>
-            
-        } finally {
-             // *** 5. AÇÃO CRÍTICA: SEMPRE LIMPA O CONTEXTO DA THREAD NO FINAL ***
-<span class="nc" id="L114">             AuthContext.clear(); </span>
         }
-<span class="nc" id="L116">    }</span>
-    
-    // Método auxiliar para escrever a resposta de falha 401
+
+<span class="nc" id="L49">        String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);</span>
+
+<span class="nc bnc" id="L51" title="All 4 branches missed.">        if (authHeader != null &amp;&amp; authHeader.startsWith(&quot;Bearer &quot;)) {</span>
+            try {
+<span class="nc" id="L53">                AuthContext.setToken(authHeader);</span>
+                
+<span class="nc" id="L55">                HttpHeaders headers = new HttpHeaders();</span>
+<span class="nc" id="L56">                headers.set(HttpHeaders.AUTHORIZATION, authHeader);</span>
+<span class="nc" id="L57">                HttpEntity&lt;String&gt; entity = new HttpEntity&lt;&gt;(headers); </span>
+                
+<span class="nc" id="L59">                ResponseEntity&lt;TokenValidationResponse&gt; validationResponse = restTemplate.exchange(</span>
+                    securityServiceValidationUrl, HttpMethod.GET, entity, TokenValidationResponse.class
+                );
+                
+<span class="nc" id="L63">                TokenValidationResponse body = validationResponse.getBody();</span>
+                
+<span class="nc bnc" id="L65" title="All 6 branches missed.">                if (validationResponse.getStatusCode() == HttpStatus.OK &amp;&amp; body != null &amp;&amp; body.isValid()) {</span>
+<span class="nc" id="L66">                    logger.info(&quot;Usuário autenticado com sucesso: &quot; + body.getUsername());</span>
+
+                    
+<span class="nc" id="L69">                    UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(</span>
+<span class="nc" id="L70">                        body.getUsername(), null, Collections.emptyList());</span>
+<span class="nc" id="L71">                    SecurityContextHolder.getContext().setAuthentication(auth);</span>
+                    
+<span class="nc" id="L73">                    request.setAttribute(USERNAME_ATTRIBUTE, body.getUsername());</span>
+<span class="nc" id="L74">                    filterChain.doFilter(request, response);</span>
+<span class="nc" id="L75">                    return;</span>
+                }
+<span class="nc" id="L77">            } catch (Exception e) {</span>
+<span class="nc" id="L78">                logger.error(&quot;Erro na validação do token para a URI: &quot; + request.getRequestURI(), e);</span>
+<span class="nc" id="L79">                sendUnauthorized(response, &quot;Falha na validação do token: &quot; + e.getMessage());</span>
+<span class="nc" id="L80">                return;</span>
+            } finally {
+<span class="nc" id="L82">                AuthContext.clear();</span>
+            }
+        }
+<span class="nc" id="L85">        sendUnauthorized(response, &quot;Token ausente ou inválido.&quot;);</span>
+<span class="nc" id="L86">    }</span>
+
     private void sendUnauthorized(HttpServletResponse response, String message) throws IOException {
-<span class="nc" id="L120">        response.setStatus(HttpStatus.UNAUTHORIZED.value());</span>
-<span class="nc" id="L121">        response.setContentType(MediaType.APPLICATION_JSON_VALUE);</span>
-<span class="nc" id="L122">        response.getWriter().write(&quot;{\&quot;status\&quot;: 401, \&quot;error\&quot;: \&quot;Unauthorized\&quot;, \&quot;message\&quot;: \&quot;&quot; + message + &quot;\&quot;}&quot;);</span>
-<span class="nc" id="L123">    }</span>
+<span class="nc" id="L89">        response.setStatus(HttpStatus.UNAUTHORIZED.value());</span>
+<span class="nc" id="L90">        response.setContentType(MediaType.APPLICATION_JSON_VALUE);</span>
+<span class="nc" id="L91">        response.getWriter().write(&quot;{\&quot;status\&quot;: 401, \&quot;message\&quot;: \&quot;&quot; + message + &quot;\&quot;}&quot;);</span>
+<span class="nc" id="L92">    }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>
