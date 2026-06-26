@@ -1,45 +1,9 @@
 server:
-  port: ${PORT:8081} # Usando porta 8081
+  port: ${PORT:8081}
 
 spring:
-  # Configuração do PostgreSQL
-  datasource:
-    url: ${DB_URL:jdbc:postgresql://server-cearabank.postgres.database.azure.com:5432/postgres}
-    username: ${DB_USERNAME:postgres} 
-    password: ${DB_PASSWORD:Unifametro@2026}
-    driver-class-name: org.postgresql.Driver
   application:
-     name: ceara-bank-transfer
-  security:
-     enabled: false
-  
-  # Configuração JPA/Hibernate
-  jpa:
-    hibernate:
-      ddl-auto: update 
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
-        dialect: org.hibernate.dialect.PostgreSQLDialect
-
-# Configuração do Swagger/OpenAPI
-springdoc:
-  swagger-ui:
-    path: /swagger-ui.html 
-  api-docs:
-    path: /v3/api-docs
-
-# --- ESTRUTURA RECOMENDADA PELO MAXO (USADA NO SERVICE) ---
-microservicos:
-  security:
-    # URL completa do endpoint de validação no microserviço de segurança (8081)
-    url-validacao-token: ${URL_VALIDACAO:http://localhost:8082/v1/seguranca/validarToken}
-
-server:
-  port: ${PORT:8082} # Usando porta 8081 para evitar conflito com outros serviços
-
-spring:
+    name: ceara-bank-contas
   # Configuração do PostgreSQL
   datasource:
     url: ${DB_URL:jdbc:postgresql://server-cearabank.postgres.database.azure.com:5432/postgres}
@@ -68,16 +32,19 @@ springdoc:
 application:
   security:
     jwt:
-      # CHAVE SECRETA: Deve ser uma string BASE64 de 32 bytes (256 bits) ou mais.
-      # Exemplo de chave real (pode gerar uma nova): 
       secret-key: NTk1MzkwNGE2ZDc2Mzc2NDdhZWM2MjNiNmY1MzY4Mzc1OTZjNjMzNjU0NjI2MzYzNjE2NDY1Njk3NDcwNzc=
-      expiration: 3600000 # 1 hora em milissegundos (60 * 60 * 1000)
+      expiration: 3600000
 
 management:
   endpoints:
     web:
       exposure:
-        include: health,info # Libera esses dois aqui pro Azure respirar
+        include: health,info
   endpoint:
     health:
-      show-details: always # Pra tu ver o que tá dando erro se o banco cair          
+      show-details: always
+
+# Configuração para o serviço de segurança validar o token
+microservicos:
+  security:
+    url-validacao-token: ${URL_VALIDACAO:http://localhost:8082/v1/seguranca/validarToken}
