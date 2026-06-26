@@ -5,9 +5,9 @@ COPY . .
 RUN mvn clean package -DskipTests
 
 # Stage 2: Rodar a aplicação
-FROM openjdk:17-jdk-slim
+FROM eclipse-temurin:17-jre
 WORKDIR /app
-# Copia o jar gerado no build (ajusta o nome se o teu for diferente)
+# Agora sim, ele busca lá do stage 'build' que definimos em cima
 COPY --from=build /app/target/*.jar app.jar
 EXPOSE 8081
 ENTRYPOINT ["java", "-jar", "app.jar"]
