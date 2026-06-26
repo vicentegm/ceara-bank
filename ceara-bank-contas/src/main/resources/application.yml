@@ -1,5 +1,5 @@
 server:
-  port: 8081 # Usando porta 8085
+  port: ${PORT:8081} # Usando porta 8081
 
 spring:
   # Configuração do PostgreSQL
