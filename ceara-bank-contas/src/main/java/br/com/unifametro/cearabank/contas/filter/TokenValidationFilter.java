@@ -29,9 +29,22 @@ public class TokenValidationFilter extends OncePerRequestFilter {
     
     public static final String USERNAME_ATTRIBUTE = "authenticatedUsername";
 
+    // Define os caminhos que não precisam de token
+    private static final String[] PUBLIC_URLS = {"/actuator/**", "/robots[0-9]+\\.txt"};
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
+
+        String requestURI = request.getRequestURI();
+        
+        // Verifica se é uma rota pública
+        for (String url : PUBLIC_URLS) {
+            if (pathMatcher.match(url, requestURI)) {
+                filterChain.doFilter(request, response); // Passa direto, não valida nada
+                return;
+            }
+        }
 
         String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
 
