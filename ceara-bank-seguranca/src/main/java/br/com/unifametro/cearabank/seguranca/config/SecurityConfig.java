@@ -40,6 +40,7 @@ public class SecurityConfig {
         return new ProviderManager(authProvider);
     }
 
+   /*
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -56,4 +57,24 @@ public class SecurityConfig {
             
         return http.build();
     }
+    */
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+        .csrf(AbstractHttpConfigurer::disable)
+        .authorizeHttpRequests(auth -> auth
+            // Liberação dos endpoints públicos de negócio
+            .requestMatchers("/v1/seguranca/users", "/v1/seguranca/login").permitAll()
+            .requestMatchers("/actuator/**").permitAll()
+            .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+            .requestMatchers("/robots[0-9]+\\.txt").permitAll()
+            .requestMatchers("/api/usuarios/**").authenticated()
+            .anyRequest().authenticated()
+        )
+        .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+        
+      return http.build();
+   }
+
 }
