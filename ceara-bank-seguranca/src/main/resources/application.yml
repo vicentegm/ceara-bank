@@ -34,3 +34,12 @@ application:
       # Exemplo de chave real (pode gerar uma nova): 
       secret-key: NTk1MzkwNGE2ZDc2Mzc2NDdhZWM2MjNiNmY1MzY4Mzc1OTZjNjMzNjU0NjI2MzYzNjE2NDY1Njk3NDcwNzc=
       expiration: 3600000 # 1 hora em milissegundos (60 * 60 * 1000)
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info # Libera esses dois aqui pro Azure respirar
+  endpoint:
+    health:
+      show-details: always # Pra tu ver o que tá dando erro se o banco cair      
