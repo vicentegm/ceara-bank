@@ -1,15 +1,24 @@
-# Usa a imagem base do eclipse-temurin que é bem mais leve e lida melhor com cross-arch
+# Estágio de build (Usa o Maven pra compilar e gerar o jar)
 FROM --platform=linux/amd64 eclipse-temurin:17-jdk-alpine AS build
 
-# Instala o Maven manualmente, já que o eclipse-temurin não vem com ele
+# Instala o Maven, o bicho precisa disso pra rodar o 'package'
 RUN apk add --no-cache maven
 
 WORKDIR /app
 COPY . .
 RUN mvn clean package -DskipTests
 
-# O resto do teu Dockerfile continua igual...
+# Estágio de execução (Bem mais leve pra não travar o Azure)
 FROM --platform=linux/amd64 eclipse-temurin:17-jre-alpine
+
+# Define o diretório de trabalho padrão
 WORKDIR /app
+
+# Copia só o jar gerado no estágio anterior
 COPY --from=build /app/target/*.jar app.jar
-ENTRYPOINT ["java", "-jar", "app.jar"]
+
+# Define a porta que o container expõe
+EXPOSE 8082
+
+# Força o Java a subir na porta 8082 e evita travamento no startup
+ENTRYPOINT ["java", "-Dserver.port=8082", "-jar", "app.jar"]
